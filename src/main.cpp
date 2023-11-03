@@ -1,3 +1,4 @@
+#include <Adafruit_NeoPixel.h>
 // This example takes heavy inpsiration from the ESP32 example by ronaldstoner
 // Based on the previous work of chipik / _hexway / ECTO-1A & SAY-10
 // See the README for more info
@@ -12,15 +13,18 @@
 BLEAdvertising *pAdvertising;  // global variable
 uint32_t delaySeconds = 1;
 
+
+#define PIN 8  // WS2812连接到的IO引脚
+#define NUMPIXELS 1  // 有一个WS2812 LED
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting ESP32 BLE");
-
-  // This is specific to the AirM2M ESP32 board
-  // https://wiki.luatos.com/chips/esp32c3/board.html
-  pinMode(12, OUTPUT);
-  pinMode(13, OUTPUT);
-
+  strip.begin();
+  strip.setBrightness(50);  // 设置LED亮度
+  strip.show();  // 初始化LED为关闭状态
   BLEDevice::init("AirPods 69");
 
   // Create the BLE Server
@@ -33,10 +37,10 @@ void setup() {
 }
 
 void loop() {
-  // Turn lights on during "busy" part
-  digitalWrite(12, HIGH);
-  digitalWrite(13, HIGH);
-
+  // 设置LED的颜色（红、绿、蓝），这里设置为红色
+  strip.setPixelColor(0, strip.Color(255, 0, 0));
+  strip.show();  // 更新LED的颜色
+  
   // First generate fake random MAC
   esp_bd_addr_t dummy_addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   for (int i = 0; i < 6; i++){
@@ -105,10 +109,8 @@ void loop() {
   // Start advertising
   Serial.println("Sending Advertisement...");
   pAdvertising->start();
-
-  // Turn lights off while "sleeping"
-  digitalWrite(12, LOW);
-  digitalWrite(13, LOW);
+  strip.setPixelColor(0, strip.Color(0, 0, 0));  // 关闭LED
+  strip.show();
   delay(delaySeconds * 1000); // delay for delaySeconds seconds
   pAdvertising->stop();
 }
